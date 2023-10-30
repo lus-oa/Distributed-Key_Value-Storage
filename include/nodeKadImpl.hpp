@@ -47,6 +47,7 @@ uint64_t k_id_distance(uint64_t dis)
 	return i - 1;
 }
 
+// 将字符串中的二进制数据按照字节进行复制，并将其解释为一个 64 位无符号整数。
 uint64_t str2u64(const std::string data)
 {
 	uint64_t ret;
@@ -66,37 +67,54 @@ namespace std
 	};
 }
 
+// 定义一个名为 Lock 的类
 class Lock
 {
+	// 用于存储一组互斥锁的指针
 	pthread_mutex_t *lock_;
+	// 记录互斥锁的数量
 	int num_locks;
 
 public:
+	// 构造函数，接受一个整数参数 num，用于指定要创建的互斥锁的数量
 	Lock(int num)
 	{
+		// 将传入的数量赋值给成员变量 num_locks
 		num_locks = num;
+		// 动态分配一组互斥锁的内存，并将指针存储在成员变量 lock_ 中
 		lock_ = new pthread_mutex_t[num_locks];
+		// 循环初始化每个互斥锁
 		for (int i = 0; i < num_locks; i++)
 		{
+			// 使用 PTHREAD_MUTEX_INITIALIZER 初始化互斥锁
 			lock_[i] = PTHREAD_MUTEX_INITIALIZER;
 		}
 	}
 
+	// lock 方法，接受一个整数参数 k，用于指定要锁定的互斥锁的索引
 	void lock(int k)
 	{
+		// 如果传入的索引 k 大于等于互斥锁的数量
 		if (k >= num_locks)
 		{
+			// 重置索引 k 为 0，以防止越界访问
 			k = 0;
 		}
+
+		// 使用 pthread_mutex_lock 锁定指定索引 k 的互斥锁
 		pthread_mutex_lock(lock_ + k);
 	}
 
+	// unlock 方法，接受一个整数参数 k，用于指定要解锁的互斥锁的索引
 	void unlock(int k)
 	{
+		// 如果传入的索引 k 大于等于互斥锁的数量
 		if (k >= num_locks)
 		{
+			// 重置索引 k 为 0，以防止越界访问
 			k = 0;
 		}
+		// 使用 pthread_mutex_unlock 解锁指定索引 k 的互斥锁
 		pthread_mutex_unlock(lock_ + k);
 	}
 };

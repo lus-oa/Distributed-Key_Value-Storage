@@ -1,8 +1,5 @@
 /*
  * node.cpp
- *
- *  Created on: 2022年3月23日
- *      Author: y84182981
  */
 
 #include <pthread.h>
