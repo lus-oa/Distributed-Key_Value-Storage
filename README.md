@@ -3,7 +3,7 @@
 
 
 
-[grpc](https://grpc.io/docs/languages/cpp/quickstart/)
+
 
 ```shell
 client connect fail
@@ -12,5 +12,4 @@ Greeter received: RPC failed
 
 需要关闭代理，unset http_proxy
 
-https://github.com/grpc/grpc/issues/9989
 ```
