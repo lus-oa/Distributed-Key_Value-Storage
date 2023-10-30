@@ -205,26 +205,47 @@ public:
 		return Status::OK;
 	}
 
-	Status find_value(ServerContext *context, const IDKey *request,
-					  KV_Node_Wrapper *response)
+	// 函数 find_value 用于处理查找键值对操作，接收 gRPC 请求并返回 gRPC 响应
+	Status find_value(ServerContext *context, const IDKey *request, KV_Node_Wrapper *response)
 	{
+		// 从请求中提取键（key）并将其转换为 64 位整数
 		uint64_t key = str2u64(request->idkey());
+
+		// 在数据库中查找键对应的值
 		auto iter = _db->find(key);
+
+		// 将本地节点的信息添加到响应中
 		response->mutable_resp_node()->CopyFrom(local_node);
+
+		// 如果在数据库中找到了对应键的值
 		if (iter != _db->end())
 		{
+			// 获取键值对的值
 			uint64_t value = iter->second;
+
+			// 将响应模式设置为键值对模式
 			response->set_mode_kv(true);
+
+			// 创建 KeyValue 消息，包含键和值的信息
 			KeyValue kv;
 			kv.mutable_node()->CopyFrom(local_node);
+
+			// 将键和值分别设置为二进制数据
 			kv.set_key((char *)(&key), sizeof(uint64_t));
 			kv.set_value((char *)(&value), sizeof(uint64_t));
+
+			// 将 KeyValue 消息添加到响应中
 			response->mutable_kv()->CopyFrom(kv);
 		}
 		else
 		{
+			// 如果在数据库中未找到对应键的值，将响应模式设置为非键值对模式
 			response->set_mode_kv(false);
+
+			// 查找最接近键的节点
 			deque<Node> nodes = findCloseById(key);
+
+			// 将这些节点的信息添加到响应中
 			for (Node node_ : nodes)
 			{
 				Node *node = response->add_nodes();
@@ -232,7 +253,11 @@ public:
 				node->set_id(node_.id());
 			}
 		}
+
+		// 调用 freshNode 函数，用于更新节点信息
 		freshNode(request->node());
+
+		// 返回 gRPC OK 状态，表示操作成功
 		return Status::OK;
 	}
 
