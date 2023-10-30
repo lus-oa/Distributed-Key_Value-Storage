@@ -261,24 +261,45 @@ public:
 		return Status::OK;
 	}
 
-	Status store(ServerContext *context, const KeyValue *request,
-				 IDKey *response)
+	// 函数 store 用于处理存储键值对操作，接收 gRPC 请求并返回 gRPC 响应
+	Status store(ServerContext *context, const KeyValue *request, IDKey *response)
 	{
+		// 从请求中提取键和值，并将它们转换为 64 位整数
 		uint64_t key = str2u64(request->key());
 		uint64_t value = str2u64(request->value());
+
+		// 将键值对存储到数据库中
 		(*_db)[key] = value;
+
+		// 调用 freshNode 函数，用于更新节点信息
 		freshNode(request->node());
+
+		// 将本地节点的唯一标识添加到响应中
 		response->set_idkey((char *)(&local_nodeId), sizeof(uint64_t));
+
+		// 将本地节点的信息添加到响应中
 		response->mutable_node()->CopyFrom(local_node);
+
+		// 返回 gRPC OK 状态，表示操作成功
 		return Status::OK;
 	}
 
+	// 函数 exit 用于处理退出节点操作，接收 gRPC 请求并返回 gRPC 响应
 	Status exit(ServerContext *context, const IDKey *request, IDKey *response)
 	{
+		// 从请求中提取目标 ID，并将其转换为 64 位整数
 		uint64_t target_id = str2u64(request->idkey());
+
+		// 调用 removeById 函数，用于从系统中删除指定 ID 的节点
 		removeById(target_id);
+
+		// 将本地节点的唯一标识添加到响应中
 		response->set_idkey((char *)(&local_nodeId), sizeof(uint64_t));
+
+		// 将本地节点的信息添加到响应中
 		response->mutable_node()->CopyFrom(local_node);
+
+		// 返回 gRPC OK 状态，表示操作成功
 		return Status::OK;
 	}
 
