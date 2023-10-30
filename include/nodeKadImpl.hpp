@@ -121,23 +121,31 @@ public:
 
 class NodeKadImpl : public KadImpl::Service
 {
+	// 使用别名 Status 代表 grpc::Status 类型
 	using Status = grpc::Status;
+	// 使用别名 ServerContext 代表 grpc::ServerContext 类型
 	using ServerContext = grpc::ServerContext;
+	// 使用别名 ClientContext 代表 grpc::ClientContext 类型
 	using ClientContext = grpc::ClientContext;
-
+	// 使用别名 Nodes 代表 google::protobuf::RepeatedPtrField<Node> 类型
 	using Nodes = google::protobuf::RepeatedPtrField<Node>;
-
+	// 字符串类型变量 local_address，用于存储本地地址
 	std::string local_address = "";
+	// 64 位无符号整数变量 local_nodeId，用于存储本地节点的唯一标识
 	uint64_t local_nodeId = 0;
+	// 64 位无符号整数变量 k_closest，用于表示 k-最近邻（k-closest）的数量
 	uint64_t k_closest = 2;
+	// 64 位无符号整数变量 num_buckets，用于表示桶的数量
 	uint64_t num_buckets = 4;
+	// Node 类型变量 local_node，用于存储本地节点的信息
 	Node local_node;
-
-	// NodeTable, need design.
+	// 双端队列（deque）指针数组 nodetable，用于表示节点表，需要设计
 	deque<Node> **nodetable;
+	// Node 类型指针数组 sbuff_ 和 cbuff_，用于存储节点信息的缓冲区
 	vector<Node> *sbuff_, *cbuff_;
+	// 64 位整数对的映射，用于表示数据库
 	map<uint64_t, uint64_t> *_db;
-
+	// Lock 类型指针变量 lock，用于管理互斥锁
 	Lock *lock;
 
 public:
