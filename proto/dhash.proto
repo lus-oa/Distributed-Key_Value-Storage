@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+service KadImpl{
+  rpc find_node(IDKey) returns (NodeList) {}
+  
+  rpc find_value(IDKey) returns (KV_Node_Wrapper) {}
+  
+  rpc store(KeyValue) returns (IDKey) {}
+  
+  rpc exit(IDKey) returns (IDKey) {}
+}
+
+message Node{
+  uint64 id = 1;
+  bytes address = 2;
+}
+
+message NodeList{
+  Node resp_node = 1;
+  repeated Node nodes = 2;
+}
+
+message IDKey{
+  Node node = 1;
+  bytes idkey = 2;
+}
+
+message KeyValue{
+  Node node = 1;
+  bytes key = 2;
+  bytes value = 3;
+}
+
+message KV_Node_Wrapper{
+  Node resp_node = 1;
+  bool mode_kv = 2;
+  KeyValue kv = 3;
+  repeated Node nodes = 4;
+}
