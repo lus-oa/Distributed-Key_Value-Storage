@@ -35,7 +35,7 @@ uint64_t id_distance(uint64_t xId, uint64_t yId)
 	return xId ^ yId;
 }
 
-// 这个函数用于计算输入的无符号 64 位整数在二进制表示中从最高位到最低位的距离，即第一个 1 之前的 0 的个数..
+// 这个函数用于计算输入的无符号 64 位整数在二进制表示中从最高位到最低位的距离，即第一个 1 之前的 0 的个数...
 uint64_t k_id_distance(uint64_t dis)
 {
 	int i = 0;
