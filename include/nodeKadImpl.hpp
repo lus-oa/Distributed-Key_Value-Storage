@@ -121,69 +121,87 @@ public:
 
 class NodeKadImpl : public KadImpl::Service
 {
-	// 使用别名 Status 代表 grpc::Status 类型
-	using Status = grpc::Status;
-	// 使用别名 ServerContext 代表 grpc::ServerContext 类型
-	using ServerContext = grpc::ServerContext;
-	// 使用别名 ClientContext 代表 grpc::ClientContext 类型
-	using ClientContext = grpc::ClientContext;
-	// 使用别名 Nodes 代表 google::protobuf::RepeatedPtrField<Node> 类型
-	using Nodes = google::protobuf::RepeatedPtrField<Node>;
-	// 字符串类型变量 local_address，用于存储本地地址
-	std::string local_address = "";
-	// 64 位无符号整数变量 local_nodeId，用于存储本地节点的唯一标识
-	uint64_t local_nodeId = 0;
-	// 64 位无符号整数变量 k_closest，用于表示 k-最近邻（k-closest）的数量
-	uint64_t k_closest = 2;
-	// 64 位无符号整数变量 num_buckets，用于表示桶的数量
-	uint64_t num_buckets = 4;
-	// Node 类型变量 local_node，用于存储本地节点的信息
-	Node local_node;
-	// 双端队列（deque）指针数组 nodetable，用于表示节点表，需要设计
-	deque<Node> **nodetable;
-	// Node 类型指针数组 sbuff_ 和 cbuff_，用于存储节点信息的缓冲区
-	vector<Node> *sbuff_, *cbuff_;
-	// 64 位整数对的映射，用于表示数据库
-	map<uint64_t, uint64_t> *_db;
-	// Lock 类型指针变量 lock，用于管理互斥锁
-	Lock *lock;
+
+	using Status = grpc::Status;							// 使用别名 Status 代表 grpc::Status 类型
+	using ServerContext = grpc::ServerContext;				// 使用别名 ServerContext 代表 grpc::ServerContext 类型
+	using ClientContext = grpc::ClientContext;				// 使用别名 ClientContext 代表 grpc::ClientContext 类型
+	using Nodes = google::protobuf::RepeatedPtrField<Node>; // 使用别名 Nodes 代表 google::protobuf::RepeatedPtrField<Node> 类型
+	std::string local_address = "";							// 字符串类型变量 local_address，用于存储本地地址
+	uint64_t local_nodeId = 0;								// 64 位无符号整数变量 local_nodeId，用于存储本地节点的唯一标识
+	uint64_t k_closest = 2;									// 64 位无符号整数变量 k_closest，用于表示 k-最近邻（k-closest）的数量
+	uint64_t num_buckets = 4;								// 64 位无符号整数变量 num_buckets，用于表示桶的数量
+	Node local_node;										// Node 类型变量 local_node，用于存储本地节点的信息
+	deque<Node> **nodetable;								// 双端队列（deque）指针数组 nodetable，用于表示节点表，需要设计
+	vector<Node> *sbuff_, *cbuff_;							// Node 类型指针数组 sbuff_ 和 cbuff_，用于存储节点信息的缓冲区
+	map<uint64_t, uint64_t> *_db;							// 64 位整数对的映射，用于表示数据库
+	Lock *lock;												// Lock 类型指针变量 lock，用于管理互斥锁
 
 public:
+	// NodeKadImpl 构造函数，接受地址、节点ID和 k-最近邻的参数
 	NodeKadImpl(std::string address, uint64_t id, uint64_t k = 2)
 	{
+		// 将传入的地址存储到本地地址变量 local_address
 		local_address = address;
+		// 将传入的节点ID存储到本地节点ID变量 local_nodeId
 		local_nodeId = id;
+		// 设置本地节点的地址为传入的地址
 		local_node.set_address(local_address);
+		// 设置本地节点的ID为传入的节点ID
 		local_node.set_id(local_nodeId);
+		// 设置 k_closest 变量为传入的 k 值
 		k_closest = k;
+		// 根据 k 值计算 num_buckets（桶的数量），并存储到 num_buckets 变量
 		num_buckets = pow(2, k);
+		// 创建一个 Lock 对象，用于管理互斥锁，锁的数量为 num_buckets
 		lock = new Lock(num_buckets);
+		// 动态分配存储节点信息的双端队列指针数组 nodetable
 		nodetable = new deque<Node> *[num_buckets];
+		// 初始化 nodetable 中的每个桶（deque）
 		for (int i = 0; i < num_buckets; i++)
 		{
 			nodetable[i] = new deque<Node>();
 		}
+		// 动态分配一个映射表，用于表示数据库
 		_db = new map<uint64_t, uint64_t>();
+		// 动态分配存储节点信息的向量 sbuff_
 		sbuff_ = new vector<Node>();
+		// 动态分配存储节点信息的向量 cbuff_
 		cbuff_ = new vector<Node>();
 	}
 
-	Status find_node(ServerContext *context, const IDKey *request,
-					 NodeList *response)
+	// 函数 find_node 用于处理查找节点操作，接收 gRPC 请求并返回 gRPC 响应
+	Status find_node(ServerContext *context, const IDKey *request, NodeList *response)
 	{
+		// 打印调试信息，显示当前节点的唯一标识
 		printf("find_node 1 %lu\n", local_nodeId);
-		uint64_t target_id = str2u64(request->idkey());
+
+		// 解析请求中的目标 ID，并将其转换为 64 位整数
+		uint64_t target_id = str2u64(request->idkey);
+
+		// 调用 findCloseById 函数查找最接近目标 ID 的节点
 		deque<Node> nodes = findCloseById(target_id);
+
+		// 将本地节点的信息添加到响应中
 		response->mutable_resp_node()->CopyFrom(local_node);
+
+		// 打印调试信息，显示当前节点的唯一标识
 		printf("find_node 2 %lu\n", local_nodeId);
+
+		// 将查找到的节点信息添加到响应中
 		for (Node node_ : nodes)
 		{
 			Node *node = response->add_nodes();
 			node->set_address(node_.address());
 			node->set_id(node_.id());
 		}
+
+		// 打印调试信息，显示当前节点的唯一标识
 		printf("find_node 3 %lu\n", local_nodeId);
+
+		// 调用 freshNode 函数，用于更新节点信息
 		freshNode(request->node());
+
+		// 返回 gRPC OK 状态，表示操作成功
 		return Status::OK;
 	}
 
