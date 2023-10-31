@@ -47,7 +47,7 @@ uint64_t k_id_distance(uint64_t dis)
 	return i - 1;
 }
 
-// 将字符串中的二进制数据按照字节进行复制，并将其解释为一个 64 位无符号整数。
+// 将字符串中的二进制数据按照字节进行复制，并将其解释为一个64位无符号整数。
 uint64_t str2u64(const std::string data)
 {
 	uint64_t ret;
@@ -67,7 +67,6 @@ namespace std
 	};
 }
 
-// 定义一个名为 Lock 的类
 class Lock
 {
 	// 用于存储一组互斥锁的指针
@@ -225,7 +224,6 @@ public:
 
 			// 将响应模式设置为键值对模式
 			response->set_mode_kv(true);
-
 			// 创建 KeyValue 消息，包含键和值的信息
 			KeyValue kv;
 			kv.mutable_node()->CopyFrom(local_node);
@@ -448,7 +446,7 @@ public:
 		{
 			_db->insert_or_assign(key, value);
 		}
-		else
+		else // 如果目标节点是远端节点，则对远端节点发送请求
 		{
 			// 创建 gRPC 通道，连接到目标节点的地址
 			auto channel = grpc::CreateChannel(target_node.address(), grpc::InsecureChannelCredentials());
