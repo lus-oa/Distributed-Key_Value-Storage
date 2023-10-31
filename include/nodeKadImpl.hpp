@@ -132,7 +132,7 @@ class NodeKadImpl : public KadImpl::Service
 	Node local_node;										// Node 类型变量 local_node，用于存储本地节点的信息
 	deque<Node> **nodetable;								// 双端队列（deque）指针数组 nodetable，用于表示节点表
 	vector<Node> *sbuff_, *cbuff_;							// Node 类型指针数组 sbuff_ 和 cbuff_，用于存储节点信息的缓冲区
-	map<uint64_t, uint64_t> *_db;							// 64 位整数对的映射，用于表示数据库
+	map<uint64_t, uint64_t> *_db;							// 64 位整数对的map，用于表示数据库
 	Lock *lock;												// Lock 类型指针变量 lock，用于管理互斥锁
 
 public:
@@ -160,7 +160,7 @@ public:
 		{
 			nodetable[i] = new deque<Node>();
 		}
-		// 动态分配一个映射表，用于表示数据库
+		// 动态分配一个map，用于表示数据库
 		_db = new map<uint64_t, uint64_t>();
 		// 动态分配存储节点信息的向量 sbuff_
 		sbuff_ = new vector<Node>();
