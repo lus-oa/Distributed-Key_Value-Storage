@@ -632,7 +632,7 @@ private:
 		// 遍历各个桶（桶的数量由 num_buckets 决定）
 		for (uint64_t i = 0; i < num_buckets; i++)
 		{
-			lock->lock(i); // 锁定当前桶，以防止其他操作干扰
+			lock->lock(i); // 锁定当前桶，以防止其他线程同时操作
 			// 遍历当前桶内的所有节点
 			for (auto node : *(nodetable[i]))
 			{
@@ -659,25 +659,34 @@ private:
 		return nodes;
 	}
 
+	/*
+	 * 该方法主要用于从节点表中删除具有给定目标ID的节点
+	 */
 	void removeById(uint64_t target_id)
 	{
+		// 计算当前节点到目标ID的距离
 		uint64_t dis = id_distance(local_nodeId, target_id);
+		// 根据距离计算 k 桶的索引
 		uint64_t k_dis = k_id_distance(dis);
 		uint64_t i;
-		lock->lock(k_dis);
+		lock->lock(k_dis); // 锁定 k 桶
 		uint64_t size = nodetable[k_dis]->size();
+		// 遍历 k 桶内的节点
 		for (i = 0; i < size; i++)
 		{
+			// 如果找到具有目标ID的节点，就退出循环
 			if ((*nodetable[k_dis])[i].id() == target_id)
 			{
 				break;
 			}
 		}
+		// 如果找到了具有目标ID的节点
 		if (i < size)
 		{
+			// 从 k 桶中移除该节点
 			nodetable[k_dis]->erase(nodetable[k_dis]->begin() + i);
 		}
-		lock->unlock(k_dis);
+		lock->unlock(k_dis); // 解锁 k 桶
 	}
 
 	void printNodeTable()
