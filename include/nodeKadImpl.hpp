@@ -573,7 +573,7 @@ private:
 	{
 		// 创建一个节点列表来存储最近的节点
 		deque<Node> nodes;
-		// 用于跟踪已添加的节点数
+		// 用于记录已添加的节点数
 		uint64_t num_nodes = 0;
 		// 遍历每个存储桶
 		for (uint64_t i = 0; i < num_buckets; i++)
@@ -601,17 +601,24 @@ private:
 		return nodes;
 	}
 
+	/*
+	 * 从一个待处理的节点队列中选择一个尚未被访问的节点
+	 */
 	bool pickNode(Node &node, deque<Node> waitq, set<uint64_t> visited)
 	{
+		// 遍历待处理节点队列中的每个节点
 		for (Node node_ : waitq)
 		{
+			// 检查该节点的ID是否在已访问节点的集合中
 			auto iter = visited.find(node_.id());
+			// 如果节点的ID没有在已访问节点中，选择该节点
 			if (iter == visited.end())
 			{
 				node = node_;
 				return true;
 			}
 		}
+		// 如果没有可用的节点可选，则返回 false
 		return false;
 	}
 
