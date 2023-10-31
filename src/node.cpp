@@ -93,7 +93,7 @@ void *run_client(void *para)
 	{
 		uint64_t key = i * 2 + id + 1;
 		node->put(key, key + 1);
-		// 输出插入键值对的信息
+		// std::cout << "put key " << key << std::endl;
 	}
 
 	// 使用线程屏障等待其他线程完成插入操作
@@ -110,7 +110,7 @@ void *run_client(void *para)
 		{
 			printf("error\n"); // 如果查询到的值不正确，输出错误信息
 		}
-		// 输出查询键值对的信息
+		//	std::cout << "get key " << key << std::endl;
 	}
 
 	// 使用线程屏障等待其他线程完成查询操作
