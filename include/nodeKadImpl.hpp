@@ -307,48 +307,35 @@ public:
 	{
 		// 创建 gRPC 通道，连接到指定的地址
 		auto channel = grpc::CreateChannel(address, grpc::InsecureChannelCredentials());
-
 		// 创建 KadImpl 服务的存根（Stub）对象
 		std::unique_ptr<KadImpl::Stub> stub = KadImpl::NewStub(channel);
-
 		// 创建客户端上下文
 		ClientContext context;
-
 		// 创建 IDKey 请求消息，用于发起节点加入操作
 		IDKey request;
-
 		// 设置 IDKey 消息中的 idkey 字段为本地节点的唯一标识
 		request.set_idkey((char *)(&local_nodeId), sizeof(uint64_t));
-
 		// 将本地节点信息添加到请求消息中
 		request.mutable_node()->CopyFrom(local_node);
-
 		// 创建 NodeList 响应消息，用于接收远程节点的响应
 		NodeList response;
-
 		// 调用 find_node RPC 方法，发起节点查找操作，并获取状态
 		Status status = stub->find_node(&context, request, &response);
-
 		// 从响应中获取响应节点信息
 		Node resp_node = response.resp_node();
-
 		// 从响应中获取远程节点列表
 		Nodes remote_nodes = response.nodes();
-
 #ifdef DHASH_DEBUG
 		// 打印节点表的调试信息
 		printNodeTable();
 #endif
-
 		// 调用 freshNode 函数，用于更新本地节点信息
 		freshNode(resp_node);
-
 		// 遍历远程节点列表，调用 freshNode 函数更新远程节点信息
 		for (const auto &node : remote_nodes)
 		{
 			freshNode(node);
 		}
-
 #ifdef DHASH_DEBUG
 		// 打印节点表的调试信息
 		printNodeTable();
