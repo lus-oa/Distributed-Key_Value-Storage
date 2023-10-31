@@ -472,28 +472,35 @@ public:
 #endif
 	}
 
+	/*
+	 * void exit()
+	 * 这个函数的主要目的是在本地节点准备退出时，通知其他节点，告知它们本地节点即将离开。
+	 * 函数通过迭代遍历所有存储桶中的节点，创建 gRPC 通道，并调用 exit RPC 方法，以通知每个节点本地节点的退出。
+	 */
 	void exit()
 	{
+		// 创建 IDKey 请求消息，用于通知其他节点本地节点即将退出
 		IDKey request, response;
 		request.set_idkey((char *)(&local_nodeId), sizeof(uint64_t));
 		request.mutable_node()->CopyFrom(local_node);
-		//		std::cout << "exit 1 " << local_nodeId << std::endl;
+		// 遍历所有存储桶，以通知每个存储桶中的节点本地节点即将退出
 		for (uint64_t i = 0; i < num_buckets; i++)
 		{
+			// 锁定当前存储桶，防止并发访问
 			lock->lock(i);
-			//			std::cout << "exit 2 " << local_nodeId << std::endl;
+			// 遍历当前存储桶中的所有节点
 			for (auto node : *(nodetable[i]))
 			{
-				auto channel = grpc::CreateChannel(node.address(),
-												   grpc::InsecureChannelCredentials());
+				// 创建 gRPC 通道，连接到当前节点的地址
+				auto channel = grpc::CreateChannel(node.address(), grpc::InsecureChannelCredentials());
 				std::unique_ptr<KadImpl::Stub> stub = KadImpl::NewStub(channel);
 				ClientContext context;
-
+				// 调用 exit RPC 方法，通知当前节点本地节点即将退出
 				stub->exit(&context, request, &response);
 			}
+			// 解锁当前存储桶
 			lock->unlock(i);
 		}
-		//		std::cout << "exit 3 " << local_nodeId << std::endl;
 	}
 
 	// not sure whether need to be implemented
