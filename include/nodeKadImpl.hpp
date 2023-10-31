@@ -444,7 +444,7 @@ public:
 		// 如果目标节点是本地节点，则将键值对存储在本地数据库
 		if (local_nodeId == target_node.id())
 		{
-			_db->insert_or_assign(key, value);
+			_db->insert_or_assign(key, value); // 如果有该key，则替换velue；如果没有该key值，直接插入
 		}
 		else // 如果目标节点是远端节点，则对远端节点发送请求
 		{
