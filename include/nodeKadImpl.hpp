@@ -344,49 +344,55 @@ public:
 
 	bool get(uint64_t key, uint64_t &value)
 	{
-		//		std::cout << "get 1" << std::endl;
+		// 初始化变量，表示是否找到目标键值对
 		bool found = false;
+		// 在本地数据库中查找键值对
 		auto iter = _db->find(key);
 		if (iter != _db->end())
 		{
 			value = iter->second;
 			return true;
 		}
-		//		std::cout << "get 2" << std::endl;
-		set<uint64_t> nodes_; // visited nodes id
+		// 创建一个集合，用于记录已经访问过的节点的唯一标识
+		set<uint64_t> nodes_;
+		// 开始循环查找键值对
 		while (true)
 		{
+			// 下一个节点信息
 			Node next_node;
+			// 查找离目标键最近的节点列表
 			deque<Node> nodes = closeNodes();
+			// 从节点列表中选择下一个节点，如果没有可选节点则退出循环
 			if (pickNode(next_node, nodes, nodes_) == false)
 			{
 				break;
 			}
-			//			std::cout << "get 3" << std::endl;
-			auto channel = grpc::CreateChannel(next_node.address(),
-											   grpc::InsecureChannelCredentials());
+			// 创建 gRPC 通道，连接到下一个节点的地址
+			auto channel = grpc::CreateChannel(next_node.address(), grpc::InsecureChannelCredentials());
 			std::unique_ptr<KadImpl::Stub> stub = KadImpl::NewStub(channel);
 			ClientContext context;
-
+			// 创建 IDKey 请求消息，用于发起查找值操作
 			IDKey request;
 			request.set_idkey((char *)(&key), sizeof(uint64_t));
 			request.mutable_node()->CopyFrom(local_node);
+			// 创建 KV_Node_Wrapper 响应消息，用于接收远程节点的响应
 			KV_Node_Wrapper response;
+			// 调用 find_value RPC 方法，发起查找值操作，并获取状态
 			Status status = stub->find_value(&context, request, &response);
-			//			std::cout << "get 4" << std::endl;
+			// 检查是否找到目标键值对
 			found = response.mode_kv();
 			if (found)
 			{
+				// 从响应中获取响应节点信息和键值对的值，并更新本地节点信息
 				Node resp_node = response.resp_node();
 				std::string val = response.kv().value();
 				memcpy(&value, val.c_str(), sizeof(uint64_t));
-				//				std::cout << "get 5 " << key << "->" << value << std::endl;
 				freshNode(resp_node);
 				break;
 			}
 			else
 			{
-				//				std::cout << "get 6 " << key << " direct " << std::endl;
+				// 如果未找到目标键值对，则更新已访问节点的信息
 				for (const auto &node : response.nodes())
 				{
 					freshNode(node);
@@ -394,6 +400,7 @@ public:
 			}
 			nodes_.insert(next_node.id());
 		}
+		// 返回是否找到目标键值对
 		return found;
 	}
 
