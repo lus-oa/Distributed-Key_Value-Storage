@@ -341,6 +341,7 @@ public:
 		printNodeTable();
 #endif
 	}
+
 	/*
 	这个函数的主要目的是在接收到查找值的请求后，根据目标键查找键值对的值。
 	如果在本地数据库找到，则直接返回；否则，从最接近的节点开始查找，直到找到目标键值对或遍历所有可选节点。
@@ -409,45 +410,59 @@ public:
 
 	void put(uint64_t key, uint64_t value)
 	{
+		// 初始化目标节点为本地节点
 		Node target_node = local_node;
+		// 计算目标节点与键之间的距离
 		uint64_t target_dis = id_distance(local_nodeId, key);
 #ifdef DHASH_DEBUG
+		// 打印节点表的调试信息
 		printNodeTable();
 #endif
+		// 遍历所有存储桶，以查找距离键最近的节点
 		for (uint64_t i = 0; i < num_buckets; i++)
 		{
+			// 锁定当前存储桶，防止并发访问
 			lock->lock(i);
+			// 遍历当前存储桶中的所有节点
 			for (auto node : *(nodetable[i]))
 			{
+				// 计算当前节点与键之间的距离
 				uint64_t dis = id_distance(node.id(), key);
+				// 如果当前节点更接近键，更新目标节点和距离
 				if (dis < target_dis)
 				{
 					target_dis = dis;
 					target_node = node;
 				}
 			}
+			// 解锁当前存储桶
 			lock->unlock(i);
 		}
+		// 如果目标节点是本地节点，则将键值对存储在本地数据库
 		if (local_nodeId == target_node.id())
 		{
 			_db->insert_or_assign(key, value);
 		}
 		else
 		{
-			auto channel = grpc::CreateChannel(target_node.address(),
-											   grpc::InsecureChannelCredentials());
+			// 创建 gRPC 通道，连接到目标节点的地址
+			auto channel = grpc::CreateChannel(target_node.address(), grpc::InsecureChannelCredentials());
 			std::unique_ptr<KadImpl::Stub> stub = KadImpl::NewStub(channel);
 			ClientContext context;
-
+			// 创建 KeyValue 请求消息，包含键值对信息
 			KeyValue request;
 			request.mutable_node()->CopyFrom(local_node);
 			request.set_key((char *)(&key), sizeof(uint64_t));
 			request.set_value((char *)(&value), sizeof(uint64_t));
+			// 创建 IDKey 响应消息，用于接收远程节点的响应
 			IDKey response;
+			// 调用 store RPC 方法，发起存储键值对操作，并获取状态
 			Status status = stub->store(&context, request, &response);
+			// 更新本地节点信息
 			freshNode(response.node());
 		}
 #ifdef DHASH_DEBUG
+		// 打印节点表的调试信息
 		printNodeTable();
 #endif
 	}
