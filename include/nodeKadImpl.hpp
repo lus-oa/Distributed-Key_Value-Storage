@@ -131,7 +131,7 @@ class NodeKadImpl : public KadImpl::Service
 	uint64_t k_closest = 2;									// 64 位无符号整数变量 k_closest，用于表示 k-最近邻（k-closest）的数量
 	uint64_t num_buckets = 4;								// 64 位无符号整数变量 num_buckets，用于表示桶的数量
 	Node local_node;										// Node 类型变量 local_node，用于存储本地节点的信息
-	deque<Node> **nodetable;								// 双端队列（deque）指针数组 nodetable，用于表示节点表，需要设计
+	deque<Node> **nodetable;								// 双端队列（deque）指针数组 nodetable，用于表示节点表
 	vector<Node> *sbuff_, *cbuff_;							// Node 类型指针数组 sbuff_ 和 cbuff_，用于存储节点信息的缓冲区
 	map<uint64_t, uint64_t> *_db;							// 64 位整数对的映射，用于表示数据库
 	Lock *lock;												// Lock 类型指针变量 lock，用于管理互斥锁
@@ -564,25 +564,40 @@ private:
 		lock->unlock(k_dis);
 	}
 
+	/*
+	 * deque<Node> closeNodes()
+	 * 此方法用于从本地节点的存储桶中选择最接近的节点，以便进行后续操作，
+	 * 例如查找数据或执行其他Kademlia协议相关任务。在已达到或超过 k_closest 数量的节点之后，方法将返回节点列表。
+	 */
 	deque<Node> closeNodes()
 	{
+		// 创建一个节点列表来存储最近的节点
 		deque<Node> nodes;
+		// 用于跟踪已添加的节点数
 		uint64_t num_nodes = 0;
+		// 遍历每个存储桶
 		for (uint64_t i = 0; i < num_buckets; i++)
 		{
+			// 锁定当前存储桶，以确保线程安全
 			lock->lock(i);
+			// 遍历当前存储桶中的每个节点
 			for (auto node : *(nodetable[i]))
 			{
+				// 将节点添加到节点列表中
 				nodes.push_back(node);
+				// 增加已添加节点的计数
 				num_nodes = num_nodes + 1;
+				// 如果已添加足够数量的节点（达到或超过 k_closest），则退出并解锁当前存储桶
 				if (num_nodes >= k_closest)
 				{
 					lock->unlock(i);
 					return nodes;
 				}
 			}
+			// 解锁当前存储桶，允许其他线程访问
 			lock->unlock(i);
 		}
+		// 返回收集到的节点列表
 		return nodes;
 	}
 
