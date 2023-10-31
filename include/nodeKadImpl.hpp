@@ -515,18 +515,30 @@ public:
 	}
 
 private:
+	/*
+	 * void freshNode(const Node node)
+	 * 此方法用于维护节点表中的节点信息，通过计算节点之间的异或距离并将其插入到适当的位置，
+	 * 以确保节点表包含距离本地节点最近的节点。
+	 */
 	void freshNode(const Node node)
 	{
+		// 获取目标节点的ID
 		uint64_t target_id = node.id();
+		// 如果目标节点ID与本地节点ID相同，直接返回，无需更新
 		if (target_id == local_nodeId)
 		{
 			return;
 		}
+		// 计算目标节点与本地节点的异或距离
 		uint64_t dis = id_distance(target_id, local_nodeId);
+		// 计算异或距离对应的位数
 		uint64_t k_dis = k_id_distance(dis);
 		uint64_t i;
+		// 获取互斥锁，锁定对应的位数
 		lock->lock(k_dis);
+		// 获取当前节点表中的节点数量
 		uint64_t size = nodetable[k_dis]->size();
+		// 查找目标节点是否已存在于节点表中
 		for (i = 0; i < size; i++)
 		{
 			if ((*nodetable[k_dis])[i].id() == target_id)
@@ -534,17 +546,21 @@ private:
 				break;
 			}
 		}
+		// 如果目标节点已存在，将其从节点表中删除
 		if (i < size)
 		{
 			nodetable[k_dis]->erase(nodetable[k_dis]->begin() + i);
 		}
-		// insert
+		// 将目标节点插入到节点表的开头
 		nodetable[k_dis]->push_front(node);
+		// 获取更新后的节点表大小
 		size = nodetable[k_dis]->size();
+		// 如果节点表超过了设定的最大节点数（k_closest），将多余的节点从末尾删除
 		for (i = size - 1; i >= k_closest; i--)
 		{
 			nodetable[k_dis]->pop_back();
 		}
+		// 解锁互斥锁
 		lock->unlock(k_dis);
 	}
 
