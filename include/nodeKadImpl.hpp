@@ -622,30 +622,40 @@ private:
 		return false;
 	}
 
+	/*
+	 * 查找距离给定目标ID最近的节点，并将这些最近的节点存储在一个deque中返回。
+	 */
 	deque<Node> findCloseById(uint64_t target_id)
 	{
-		deque<Node> nodes;
-		deque<std::pair<uint64_t, Node>> sorted;
+		deque<Node> nodes;						 // 用于存储最近的节点
+		deque<std::pair<uint64_t, Node>> sorted; // 存储节点及其到目标ID的距离
+		// 遍历各个桶（桶的数量由 num_buckets 决定）
 		for (uint64_t i = 0; i < num_buckets; i++)
 		{
-			lock->lock(i);
+			lock->lock(i); // 锁定当前桶，以防止其他操作干扰
+			// 遍历当前桶内的所有节点
 			for (auto node : *(nodetable[i]))
 			{
+				// 计算当前节点到目标ID的距离
 				uint64_t dis = id_distance(node.id(), target_id);
+				// 将节点和其距离存入 sorted 列表
 				sorted.push_back(std::make_pair(dis, node));
 			}
-			lock->unlock(i);
+			lock->unlock(i); // 解锁当前桶
+			// 对 sorted 列表中的节点按照距离进行升序排序
+			std::sort(sorted.begin(), sorted.end(),
+					  [](std::pair<uint64_t, Node> const &a,
+						 std::pair<uint64_t, Node> const &b)
+					  {
+						  return a.first < b.first;
+					  });
+			// 将排序后的最近节点添加到返回节点队列中，最多添加 k_closest 个节点
+			for (uint64_t i = 0; i < sorted.size() && i < k_closest; i++)
+			{
+				nodes.push_back(sorted[i].second);
+			}
 		}
-		std::sort(sorted.begin(), sorted.end(),
-				  [](std::pair<uint64_t, Node> const &a,
-					 std::pair<uint64_t, Node> const &b)
-				  {
-					  return a.first < b.first;
-				  });
-		for (uint64_t i = 0; i < sorted.size() && i < k_closest; i++)
-		{
-			nodes.push_back(sorted[i].second);
-		}
+		// 返回距离目标ID最近的节点队列
 		return nodes;
 	}
 
