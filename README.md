@@ -61,7 +61,8 @@ HTTP/2对消息头进行了压缩传输，能够节省消息头占用的网络�
 
 从上图和文档中可以看出，用gRPC来进行远程调用服务，客户端(client) 仅仅需要gRPC Stub(存根) ，通过Proto Request向gRPC Server发起服务调用，然后 gRPC Server通过Proto Response(s)将调用结果返回给调用的client。
  
-![image](https://github.com/lus-oa/Distributed-Key_Value-Storage/assets/122666739/b6be0efd-da6a-4fc4-a29a-54e6d6e28df0)
+![image](https://github.com/lus-oa/Distributed-Key_Value-Storage/assets/122666739/662e2f7c-4cd2-4f23-bcd7-04a57b619080)
+
 
 
 ## 代码分析
