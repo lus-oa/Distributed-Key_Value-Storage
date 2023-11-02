@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "deque": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "atomic": "cpp"
     }
 }

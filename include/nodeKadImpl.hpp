@@ -35,7 +35,7 @@ uint64_t id_distance(uint64_t xId, uint64_t yId)
 	return xId ^ yId;
 }
 
-// 这个函数用于计算输入的无符号 64 位整数在二进制表示中从最高位到最低位的距离，即第一个 1 之前的 0 的个数
+// 这个函数用于计算输入的无符号 64 位整数在二进制表示中从最高位到最低位的距离
 uint64_t k_id_distance(uint64_t dis)
 {
 	int i = 0;
@@ -171,7 +171,6 @@ public:
 	// 函数 find_node 用于处理查找节点操作，接收 gRPC 请求并返回 gRPC 响应
 	Status find_node(ServerContext *context, const IDKey *request, NodeList *response)
 	{
-		// 打印调试信息，显示当前节点的唯一标识
 		printf("find_node 1 %lu\n", local_nodeId);
 
 		// 解析请求中的目标 ID，并将其转换为 64 位整数
@@ -183,7 +182,6 @@ public:
 		// 将本地节点的信息添加到响应中
 		response->mutable_resp_node()->CopyFrom(local_node);
 
-		// 打印调试信息，显示当前节点的唯一标识
 		printf("find_node 2 %lu\n", local_nodeId);
 
 		// 将查找到的节点信息添加到响应中
