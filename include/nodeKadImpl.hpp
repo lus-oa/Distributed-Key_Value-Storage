@@ -563,7 +563,7 @@ private:
 	/*
 	 * deque<Node> closeNodes()
 	 * 此方法用于从本地节点的存储桶中选择最接近的节点，以便进行后续操作，
-	 * 例如查找数据或执行其他Kademlia协议相关任务。在已达到或超过 k_closest 数量的节点之后，方法将返回节点列表。
+	 * 在已达到或超过 k_closest 数量的节点之后，方法将返回节点列表。
 	 */
 	deque<Node> closeNodes()
 	{
