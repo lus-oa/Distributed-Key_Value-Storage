@@ -583,7 +583,7 @@ private:
 				nodes.push_back(node);
 				// 增加已添加节点的计数
 				num_nodes = num_nodes + 1;
-				// 如果已添加足够数量的节点（达到或超过 k_closest），则退出并解锁当前存储桶
+				// 如果已添加足够数量的节点，则退出并解锁当前存储桶
 				if (num_nodes >= k_closest)
 				{
 					lock->unlock(i);
