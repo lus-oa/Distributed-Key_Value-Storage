@@ -499,7 +499,6 @@ public:
 		}
 	}
 
-	// not sure whether need to be implemented
 	bool find_node(uint64_t nodeId)
 	{
 		return false;
