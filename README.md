@@ -100,6 +100,13 @@ Kademlia采用了“node ID 与 data key 同构”的设计思路。Kademlia 采
  - 如果该位是 1，进入左子树，是 0 则进入右子树；
  - 把每一个 key 缩短为它的最短唯一前缀。
 
+![image](https://github.com/lus-oa/Distributed-Key_Value-Storage/assets/122666739/35c6f024-2dcb-47d2-ad69-0726a115fe6f)
+
+### 二叉树拆分
+**二叉树拆分：** 对每一个节点，都可以按照自己的视角对整个二叉树进行拆分。<br/>
+**拆分规则：** 先从根节点开始，把不包含自己的那个子树拆分出来；然后在剩下的子树再拆分不包含自己的下一层子树；以此类推，直到最后只剩下自己。<br/>
+![image](https://github.com/lus-oa/Distributed-Key_Value-Storage/assets/122666739/d239d128-0fe1-4010-ab46-84bd6fe9b5e8)
+
 ## 代码分析
 
 #### id_distance
