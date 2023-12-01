@@ -93,6 +93,12 @@ Kademlia是分布式哈希表（Distributed Hash Table, DHT）的一种。而DHT
 Kad 使用 160bit的散列算法，完整的 key 用二进制表示有 160 个数位（bit）。实际运行的 Kad 网络，即使有几百万个节点，相比 keyspace（2160）也只是很小很小很小的一个子集。其次，由于散列函数的特点，key 的分布是高度随机的。因此任何两个 key 都不会非常临近。<br/>
 ![image](https://github.com/lus-oa/Distributed-Key_Value-Storage/assets/122666739/ad91e9da-f149-417b-9889-0592a59e4757)
 
+### 拓扑结构：二叉树
+Kademlia采用了“node ID 与 data key 同构”的设计思路。Kademlia 采用某种算法把 key 映射到一个二叉树，每一个 key 都是这个二叉树的叶子。在映射之前，先做以下预处理。<br/>
+ - 先把 key 以二进制形式表示，然后从高位到低位依次处理；
+ - 二进制的第 n 个 bit 就对应了二叉树的第 n 层；
+ - 如果该位是 1，进入左子树，是 0 则进入右子树；
+ - 把每一个 key 缩短为它的最短唯一前缀。
 
 ## 代码分析
 
