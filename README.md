@@ -69,11 +69,3 @@ result: 1110110011101000111001000111000011010001110010011101010011011110
 
 
 
-```shell
-client connect fail
-14: failed to connect to all addresses
-Greeter received: RPC failed
-
-需要关闭代理，unset http_proxy
-
-```
